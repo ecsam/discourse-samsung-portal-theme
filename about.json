@@ -1,5 +1,5 @@
 {
-  "name": "Samsung Portal Theme Renewal 2021",
+  "name": "Samsung Portal Theme Renewal 2023",
   "component": false,
   "license_url": null,
   "about_url": null,
@@ -8,32 +8,34 @@
   "minimum_discourse_version": null,
   "maximum_discourse_version": null,
   "assets": {
+    "icon_buzzsprout": "assets/icon_buzzsprout.svg",
     "icon_close": "assets/icon_close.svg",
     "icon_close_w": "assets/icon_close_w.svg",
     "icon_close_white": "assets/icon_close_white.svg",
     "icon_search_zoom": "assets/icon_search_zoom.svg",
     "icon_search_zoom_black": "assets/icon_search_zoom_black.svg",
-	"icon_buzzsprout": "assets/icon_buzzsprout.svg",
-    "logo_developers_2021": "assets/logo_developers_w_new2.svg",
+    "logo_developers_2021": "assets/logo_developers_2021.svg",
     "SamsungOne-400": "assets/SamsungOne-400.woff",
     "SamsungOne-700": "assets/SamsungOne-700.woff",
-    "SamsungSharpSans-Bold-woff2": "assets/SamsungSharpSans-Bold.woff2",
-    "SamsungSharpSans-Bold-woff": "assets/SamsungSharpSans-Bold.woff",
-    "SamsungSharpSans-Medium-woff2": "assets/SamsungSharpSans-Medium.woff2",
-    "SamsungSharpSans-Medium-woff": "assets/SamsungSharpSans-Medium.woff"
+    "SamsungSharpSans-Bold-woff": "assets/SamsungSharpSans-Bold-woff.woff",
+    "SamsungSharpSans-Bold-woff2": "assets/SamsungSharpSans-Bold-woff2.woff2",
+    "SamsungSharpSans-Medium-woff": "assets/SamsungSharpSans-Medium-woff.woff",
+    "SamsungSharpSans-Medium-woff2": "assets/SamsungSharpSans-Medium-woff2.woff2"
   },
   "color_schemes": {
     "Samsung Portal": {
       "primary": "363636",
       "secondary": "ffffff",
-      "tertiary": "0077C8",
-      "quaternary": "00B3E3",
+      "tertiary": "0077c8",
+      "quaternary": "00b3e3",
       "header_background": "ffffff",
       "header_primary": "333333",
-      "highlight": "FFB546",
-      "danger": "FF4337",
-      "success": "00B3E3",
-      "love": "FF4337"
+      "highlight": "ffb546",
+      "selected": "e9e9e9",
+      "hover": "f2f2f2",
+      "danger": "ff4337",
+      "success": "00b3e3",
+      "love": "ff4337"
     }
   },
   "modifiers": {

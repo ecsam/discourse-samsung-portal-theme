@@ -1,570 +1,618 @@
-<meta name="google-site-verification" content="fab7CHFKJlumAepIs8ztUQ0bmHHOIKCfWWM0zWV-xrM" />
+<meta
+  name="google-site-verification"
+  content="fab7CHFKJlumAepIs8ztUQ0bmHHOIKCfWWM0zWV-xrM"
+/>
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script
+  src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+  crossorigin="anonymous"
+></script>
 
 <script type="text/discourse-plugin" version="0.8">
-    //api.changeWidgetSetting('home-logo', 'href', 'http://developer.samsung.com');
-    api.decorateWidget("home-logo:before", helper => {
-        return helper.h(
-            "a",
-            {
-              title: 'Forum Home',
-              href: '/',
-              target: '_self',
-              class: 'forum-home'
-            },
-            'Forum Home'
-        );
-    });
-
+  //api.changeWidgetSetting('home-logo', 'href', 'http://developer.samsung.com');
+  api.decorateWidget("home-logo:before", helper => {
+      return helper.h(
+          "a",
+          {
+            title: 'Forum Home',
+            href: '/',
+            target: '_self',
+            class: 'forum-home'
+          },
+          'Forum Home'
+      );
+  });
 </script>
 
 <script type="text/javascript">
+  $(document).ready(function () {
+    $(".sdp-footer .year").replaceWith(new Date().getFullYear());
+  });
 
-    $(document).ready(function(){
-        $('.sdp-footer .year').replaceWith(new Date().getFullYear());
-    });
-
-/*=========================================================== [ Global Variables ] =======================================================================*/
-if (typeof window.GlobalVars == 'undefined' || !window.GlobalVars) {
-
+  /*=========================================================== [ Global Variables ] =======================================================================*/
+  if (typeof window.GlobalVars == "undefined" || !window.GlobalVars) {
     window.GlobalVars = {
-        isDevMode: false,
-        isDevModeCss: false,
-        isShowTopNav: true,
+      isDevMode: false,
+      isDevModeCss: false,
+      isShowTopNav: true,
 
-        DeviceType: {
-            DESKTOP: 'desktop',
-            TABLET: 'tablet',
-            MOBILE: 'mobile'
-        },
+      DeviceType: {
+        DESKTOP: "desktop",
+        TABLET: "tablet",
+        MOBILE: "mobile",
+      },
 
-        WindowInfo: {
-            width: '',
-            height: '',
-            scrollTop: '',
-            scrollBottom: '',
-        },
+      WindowInfo: {
+        width: "",
+        height: "",
+        scrollTop: "",
+        scrollBottom: "",
+      },
 
-        fixedType: {
-            SUBNAV : 'sub_nav'
-        },
-        CurrentScreenType: '',
-        OldScreenType: '',
-        getScrollTop : 0,
-        getFixedScrollTop : 0,
-        headerH : 32
-    }
-
-
-}
-;
-
-/*=========================================================== [ Global Event Constants Name ] =======================================================================*/
-if (typeof window.GlobalEvent == 'undefined' || !window.GlobalEvent) {
+      fixedType: {
+        SUBNAV: "sub_nav",
+      },
+      CurrentScreenType: "",
+      OldScreenType: "",
+      getScrollTop: 0,
+      getFixedScrollTop: 0,
+      headerH: 32,
+    };
+  }
+  /*=========================================================== [ Global Event Constants Name ] =======================================================================*/
+  if (typeof window.GlobalEvent == "undefined" || !window.GlobalEvent) {
     window.GlobalEvent = {};
     window.GlobalEvent.SCROLL = "scroll";
     window.GlobalEvent.RESIZE = "resize";
     window.GlobalEvent.CHANGE_DEVICE_SIZE = "change_device_size";
     window.GlobalEvent.MOUSE_WHEEL = "mousewheel";
-}
+  }
 
+  /*=========================================================== [ Define App's Object ] =======================================================================*/
 
-/*=========================================================== [ Define App's Object ] =======================================================================*/
-
-if (typeof window.SdpApp == 'undefined' || !window.SdpApp) {
+  if (typeof window.SdpApp == "undefined" || !window.SdpApp) {
     window.SdpApp = {};
     SdpApp.utils = {};
     SdpApp.ui = {};
-}
+  }
 
+  /*=========================================================== [ App Start ] =======================================================================*/
+  (function (ns, $, undefined) {
+    var Common = (function () {
+      var _init = function () {
+        // for App
+        SdpApp.top_nav.init();
 
-/*=========================================================== [ App Start ] =======================================================================*/
-(function(ns, $, undefined){
-    var Common = (function(){
-        var _init = function(){
+        SdpApp.footer.init();
 
-            // for App
-            SdpApp.top_nav.init();
+        //SdpApp.ui.main.init();
 
-			SdpApp.footer.init();
+        SdpApp.utils.main.init();
+      };
 
-            //SdpApp.ui.main.init();
-
-            SdpApp.utils.main.init();
-
-        };
-
-        return {
-            init: _init,
-        }
+      return {
+        init: _init,
+      };
     })();
 
     ns.common = Common;
+  })(SdpApp || {}, jQuery);
 
-}(SdpApp || {}, jQuery));
-
-
-$(document).ready(function(){
+  $(document).ready(function () {
     SdpApp.common.init();
+  });
 
-});
+  /*=========================================================== [ Utils / Resize / Scroll ] =======================================================================*/
 
+  (function (ns, $, undefined) {
+    var UtilMain = (function () {
+      var winWidth,
+        winHeight,
+        topH,
+        scrollTop,
+        scrollBottom,
+        scrollLeft,
+        fixedScrollTop;
 
-/*=========================================================== [ Utils / Resize / Scroll ] =======================================================================*/
+      // 반응형 디바이스 타입
+      var oldDeviceType = "";
+      var currentScreenType = "";
 
-(function(ns, $, undefined){
-    var UtilMain = (function(){
+      var _init = function () {
+        _addEvent();
+      };
 
-        var winWidth, winHeight, topH, scrollTop, scrollBottom, scrollLeft,fixedScrollTop;
+      var _addEvent = function () {
+        _onScroll();
+        _onResize();
+        _setWindowSize();
+      };
 
-        // 반응형 디바이스 타입
-        var oldDeviceType = '';
-        var currentScreenType = '';
+      var _onScroll = function () {
+        $(window).on("scroll", _onScroll_handler);
+      };
 
+      var _onResize = function () {
+        $(window).on("resize", _onResizeHandler);
+      };
 
-        var _init = function(){
-            _addEvent();
+      var _onScroll_handler = function (e) {
+        var doc = document.documentElement;
+        var top = (window.GlobalVars.WindowInfo.top =
+          (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0));
+        var left =
+          (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+        var bottom = top + winHeight;
+
+        // custom Event
+        $(window.GlobalEvent).trigger(window.GlobalEvent.SCROLL, {
+          top: top,
+          left: left,
+          bottom: bottom,
+        });
+
+        window.GlobalVars.getScrollTop = scrollTop = top;
+      };
+
+      var _onResizeHandler = function () {
+        _setWindowSize();
+      };
+
+      var _setWindowSize = function () {
+        window.GlobalVars.WindowInfo.width = winWidth =
+          window.innerWidth || document.documentElement.clientWidth;
+        window.GlobalVars.WindowInfo.height = winHeight =
+          window.innerHeight || document.documentElement.clientHeight;
+
+        _checkScreenType();
+        $(window.GlobalEvent).trigger(window.GlobalEvent.RESIZE, {
+          width: winWidth,
+          height: winHeight,
+        });
+      };
+
+      var _checkScreenType = function () {
+        //console.log('oldDeviceType',oldDeviceType, 'globalVar', window.GlobalVars.OldScreenType)
+
+        if (winWidth < 768) {
+          currentScreenType = window.GlobalVars.DeviceType.MOBILE;
+        } else if (winWidth >= 768 && winWidth < 1124) {
+          currentScreenType = window.GlobalVars.DeviceType.TABLET;
+        } else {
+          currentScreenType = window.GlobalVars.DeviceType.DESKTOP;
         }
 
-        var _addEvent = function(){
-            _onScroll();
-            _onResize();
-            _setWindowSize();
-        };
+        window.GlobalVars.CurrentScreenType = currentScreenType;
 
-        var _onScroll = function(){
-            $(window).on('scroll', _onScroll_handler)
-        };
-
-        var _onResize = function(){
-            $(window).on('resize', _onResizeHandler);
-        };
-
-        var _onScroll_handler = function(e){
-            var doc = document.documentElement;
-            var top = window.GlobalVars.WindowInfo.top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
-            var left = (window.pageXOffset || doc.scrollLeft)  - (doc.clientLeft || 0);
-            var bottom =  top + winHeight;
-
-            // custom Event
-            $(window.GlobalEvent).trigger(window.GlobalEvent.SCROLL,{top:top, left:left, bottom: bottom});
-
-            window.GlobalVars.getScrollTop = scrollTop = top;
-        };
-
-        var _onResizeHandler = function(){
-            _setWindowSize();
-        };
-
-        var _setWindowSize = function(){
-
-            window.GlobalVars.WindowInfo.width = winWidth = (window.innerWidth || document.documentElement.clientWidth);
-            window.GlobalVars.WindowInfo.height = winHeight = (window.innerHeight || document.documentElement.clientHeight);
-
-            _checkScreenType();
-            $(window.GlobalEvent).trigger(window.GlobalEvent.RESIZE,{width:winWidth, height:winHeight});
-
-        };
-
-        var _checkScreenType = function(){
-
-            //console.log('oldDeviceType',oldDeviceType, 'globalVar', window.GlobalVars.OldScreenType)
-
-            if(winWidth < 768){
-                currentScreenType = window.GlobalVars.DeviceType.MOBILE;
-            }else if(winWidth >= 768 && winWidth < 1124 ){
-                currentScreenType = window.GlobalVars.DeviceType.TABLET;
-            }else {
-                currentScreenType = window.GlobalVars.DeviceType.DESKTOP;
-            }
-
-            window.GlobalVars.CurrentScreenType = currentScreenType;
-
-
-            if(oldDeviceType !== currentScreenType) {
-                //console.log('currentScreen', oldDeviceType,':', window.GlobalVars.CurrentScreenType)
-                $(window.GlobalEvent).trigger(window.GlobalEvent.CHANGE_DEVICE_SIZE/*,{device : currentScreenType}*/);
-            }
-
-            oldDeviceType = currentScreenType;
-            //window.GlobalVars.OldScreenType = oldDeviceType
-
-            //if(oldDeviceType !== currentScreenType){
-                window.GlobalVars.OldScreenType = oldDeviceType;
-
-            //}
-        };
-
-        var _setFixed = function($type) {
-            var time=0;
-            fixedScrollTop = scrollTop;
-
-            if(scrollTop < window.GlobalVars.headerH) {
-                fixedScrollTop = 0;
-                time = 600;
-            }
-
-            $('body').addClass('fixed');
-            $('body').stop().animate({
-                'margin-top': -fixedScrollTop
-            }, time);
-
-
-            window.GlobalVars.getFixedScrollTop = fixedScrollTop;
-
-            switch ($type) {
-                case window.GlobalVars.fixedType.SUBNAV :
-
-                    $('#el-top-title-nav').css('z-index',1500);
-
-                    break;
-            }
-
+        if (oldDeviceType !== currentScreenType) {
+          //console.log('currentScreen', oldDeviceType,':', window.GlobalVars.CurrentScreenType)
+          $(window.GlobalEvent).trigger(
+            window.GlobalEvent
+              .CHANGE_DEVICE_SIZE /*,{device : currentScreenType}*/
+          );
         }
 
-        var _removeFixed = function() {
-            $('body').removeClass('fixed');
-            $('body').css('margin-top' ,0);
+        oldDeviceType = currentScreenType;
+        //window.GlobalVars.OldScreenType = oldDeviceType
 
-            $('html, body').stop().animate({
-                scrollTop: fixedScrollTop
-            }, 0,function() {
-                _onScroll_handler();
+        //if(oldDeviceType !== currentScreenType){
+        window.GlobalVars.OldScreenType = oldDeviceType;
 
-            });
-            window.GlobalVars.getFixedScrollTop = 0;
+        //}
+      };
 
-            $('#el-top-title-nav').css('z-index',200);
+      var _setFixed = function ($type) {
+        var time = 0;
+        fixedScrollTop = scrollTop;
+
+        if (scrollTop < window.GlobalVars.headerH) {
+          fixedScrollTop = 0;
+          time = 600;
         }
 
+        $("body").addClass("fixed");
+        $("body").stop().animate(
+          {
+            "margin-top": -fixedScrollTop,
+          },
+          time
+        );
 
-        return {
-            init : _init,
-            setFixed : _setFixed,
-            removeFixed : _removeFixed
+        window.GlobalVars.getFixedScrollTop = fixedScrollTop;
+
+        switch ($type) {
+          case window.GlobalVars.fixedType.SUBNAV:
+            $("#el-top-title-nav").css("z-index", 1500);
+
+            break;
         }
+      };
+
+      var _removeFixed = function () {
+        $("body").removeClass("fixed");
+        $("body").css("margin-top", 0);
+
+        $("html, body")
+          .stop()
+          .animate(
+            {
+              scrollTop: fixedScrollTop,
+            },
+            0,
+            function () {
+              _onScroll_handler();
+            }
+          );
+        window.GlobalVars.getFixedScrollTop = 0;
+
+        $("#el-top-title-nav").css("z-index", 200);
+      };
+
+      return {
+        init: _init,
+        setFixed: _setFixed,
+        removeFixed: _removeFixed,
+      };
     })();
 
     ns.utils.main = UtilMain;
+  })(SdpApp || {}, jQuery);
 
-}(SdpApp || {}, jQuery));
-
-/*=========================================================== [ Header ] =======================================================================*/
-(function (ns, $, undefined) {
+  /*=========================================================== [ Header ] =======================================================================*/
+  (function (ns, $, undefined) {
     var TopNav = (function () {
-        var header;
+      var header;
 
-        var globalNavBox, toggleMobileGnb, global_common_1Depth,
-            global_common_nav, global_common_1Depth_mobileToggle, global_common_1DepthLinkItem, global_common_2Depth, commonOhtersMenu;
+      var globalNavBox,
+        toggleMobileGnb,
+        global_common_1Depth,
+        global_common_nav,
+        global_common_1Depth_mobileToggle,
+        global_common_1DepthLinkItem,
+        global_common_2Depth,
+        commonOhtersMenu;
 
-        var isMobileScreen = false;
-        var isOpened2depth = false;
+      var isMobileScreen = false;
+      var isOpened2depth = false;
 
-        var _init = function(){
-            _setDomElements();
+      var _init = function () {
+        _setDomElements();
 
-            _check1DepthSubMenu();
-            _onChangeDeviceSizeHandler();
+        _check1DepthSubMenu();
+        _onChangeDeviceSizeHandler();
 
-            //$(window.GlobalEvent).on(window.GlobalEvent.SCROLL, _onScrollHandler);
-            //$(window.GlobalEvent).on(window.GlobalEvent.RESIZE, _onResizeHandler);
-            $(window.GlobalEvent).on(window.GlobalEvent.CHANGE_DEVICE_SIZE, _onChangeDeviceSizeHandler);
-        };
+        //$(window.GlobalEvent).on(window.GlobalEvent.SCROLL, _onScrollHandler);
+        //$(window.GlobalEvent).on(window.GlobalEvent.RESIZE, _onResizeHandler);
+        $(window.GlobalEvent).on(
+          window.GlobalEvent.CHANGE_DEVICE_SIZE,
+          _onChangeDeviceSizeHandler
+        );
+      };
 
-        var _setDomElements = function () {
-            header = $('#el-sdp-header');
+      var _setDomElements = function () {
+        header = $("#el-sdp-header");
 
-            globalNavBox = $('#global-nav-collapse');
-            global_common_nav = globalNavBox.find('.main-nav');
-            global_common_1Depth = globalNavBox.find('.navbar-depth1');
-            global_common_1Depth_mobileToggle = global_common_1Depth.find('> .nav-item > .toggle-submenu');
-            global_common_1DepthLinkItem = globalNavBox.find('.depth1-link');
-            global_common_2Depth = globalNavBox.find('.navbar-depth2-wrap');
-            commonOhtersMenu = global_common_1Depth.find('> .nav-item').children().not('.depth1-link, .navbar-depth2-wrap');
-            toggleMobileGnb = $('#toggle-mobile-gnb');
-        };
+        globalNavBox = $("#global-nav-collapse");
+        global_common_nav = globalNavBox.find(".main-nav");
+        global_common_1Depth = globalNavBox.find(".navbar-depth1");
+        global_common_1Depth_mobileToggle = global_common_1Depth.find(
+          "> .nav-item > .toggle-submenu"
+        );
+        global_common_1DepthLinkItem = globalNavBox.find(".depth1-link");
+        global_common_2Depth = globalNavBox.find(".navbar-depth2-wrap");
+        commonOhtersMenu = global_common_1Depth
+          .find("> .nav-item")
+          .children()
+          .not(".depth1-link, .navbar-depth2-wrap");
+        toggleMobileGnb = $("#toggle-mobile-gnb");
+      };
 
-        var _onChangeDeviceSizeHandler = function() {
-            if(window.GlobalVars.CurrentScreenType === window.GlobalVars.DeviceType.DESKTOP) {
-                _checkOpenedMobileGnb();
+      var _onChangeDeviceSizeHandler = function () {
+        if (
+          window.GlobalVars.CurrentScreenType ===
+          window.GlobalVars.DeviceType.DESKTOP
+        ) {
+          _checkOpenedMobileGnb();
 
-                _removeEvent_gnb_NonDeskTop();
-                _addEvent_gnb_DeskTop();
-                _init_2depthPosition_desktop();
-                isMobileScreen = false;
-            }else {
-                if(!isMobileScreen){
-                    _removeEvent_gnb_NonDeskTop();
-                    _removeEvent_gnb_DeskTop();
-                    _addEvent_gnb_NonDeskTop();
-                    _init_2depthPosition_mobile();
-                    isMobileScreen = true;
-                }
+          _removeEvent_gnb_NonDeskTop();
+          _addEvent_gnb_DeskTop();
+          _init_2depthPosition_desktop();
+          isMobileScreen = false;
+        } else {
+          if (!isMobileScreen) {
+            _removeEvent_gnb_NonDeskTop();
+            _removeEvent_gnb_DeskTop();
+            _addEvent_gnb_NonDeskTop();
+            _init_2depthPosition_mobile();
+            isMobileScreen = true;
+          }
+        }
+      };
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// Event
+
+      var _addEvent_gnb_DeskTop = function () {
+        global_common_nav.on({
+          mouseleave: _onMouseOutGnbHandler,
+        });
+
+        commonOhtersMenu.on({
+          mouseover: _onMouseOver_2DepthHandler,
+        });
+
+        global_common_1DepthLinkItem.on({
+          click: _onClick_1DepthLinkItemHandler,
+          mouseover: _onMouseOver_1DepthLinkItemHandler,
+        });
+
+        global_common_1DepthLinkItem.next(".navbar-depth2-wrap").on({
+          mouseleave: _onMouseOut_2DepthHandler,
+        });
+      };
+
+      var _addEvent_gnb_NonDeskTop = function () {
+        toggleMobileGnb.on({
+          click: _onClickToggleMobileGnbHandler,
+        });
+
+        global_common_1Depth_mobileToggle.on({
+          click: _onClick_1DepthLinkItemHandler,
+        });
+      };
+
+      var _removeEvent_gnb_DeskTop = function () {
+        global_common_nav.off("mouseleave");
+        global_common_1DepthLinkItem.off("click");
+        global_common_1DepthLinkItem.off("mouseover");
+        global_common_1DepthLinkItem
+          .next(".navbar-depth2-wrap")
+          .off("mouseleave");
+        commonOhtersMenu.off("mouseover");
+      };
+
+      var _removeEvent_gnb_NonDeskTop = function () {
+        toggleMobileGnb.off("click");
+        global_common_1Depth_mobileToggle.off("click");
+      };
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// Event handler
+
+      //GNB
+      var _onClickToggleMobileGnbHandler = function () {
+        if (!globalNavBox.hasClass("show")) {
+          if ($(".btn-global-search.is-mobile").hasClass("active")) {
+            $(".btn-global-search.is-mobile").click();
+          }
+
+          $(this).attr("aria-expanded", true).addClass("active");
+
+          globalNavBox.on(
+            "animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd",
+            function () {
+              globalNavBox
+                .css("overflow-y", "auto")
+                .off(
+                  "animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd"
+                );
             }
-        };
+          );
+          globalNavBox.addClass("show");
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// Event
+          SdpApp.utils.main.setFixed();
+        } else {
+          globalNavBox.on(
+            "animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd",
+            function () {
+              globalNavBox.off(
+                "animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd"
+              );
+              $("#global-nav-collapse").scrollTop(0);
+              $(this)
+                .removeClass("show")
+                .removeClass("hide")
+                .removeAttr("style");
+            }
+          );
+          globalNavBox.addClass("hide");
+          $(this).attr("aria-expanded", false).removeClass("active");
+          _checkOpendedMobile2DepthMenu();
 
+          SdpApp.utils.main.removeFixed();
+        }
+      };
 
-        var _addEvent_gnb_DeskTop = function() {
-            global_common_nav.on({
-                mouseleave: _onMouseOutGnbHandler
-            });
+      var _onMouseOutGnbHandler = function () {
+        global_common_nav.find(".depth1-link").removeClass("show");
+      };
 
-            commonOhtersMenu.on({
-                mouseover: _onMouseOver_2DepthHandler,
-            });
+      var _onClick_1DepthLinkItemHandler = function (e) {
+        if (isMobileScreen) {
+          global_common_nav
+            .find(".toggle-submenu")
+            .not($(this))
+            .removeClass("show")
+            .parent()
+            .children(".navbar-depth2-wrap")
+            .stop()
+            .animate(
+              {
+                height: 0,
+              },
+              200
+            );
 
-            global_common_1DepthLinkItem.on({
-                click: _onClick_1DepthLinkItemHandler,
-                mouseover: _onMouseOver_1DepthLinkItemHandler,
-            });
+          if (!$(this).hasClass("show")) {
+            $(this).addClass("show");
+            isOpened2depth = true;
 
-            global_common_1DepthLinkItem.next('.navbar-depth2-wrap').on({
-                mouseleave: _onMouseOut_2DepthHandler
-            });
-        };
+            var h = 0;
+            $(this)
+              .parent()
+              .find(".navbar-depth2-wrap ul")
+              .each((_, x) => {
+                h += $(x).height();
+              });
+            $(this).parent().children(".navbar-depth2-wrap").stop().animate(
+              {
+                height: h,
+              },
+              300
+            );
+          } else {
+            $(this).removeClass("show");
+            isOpened2depth = false;
 
-        var _addEvent_gnb_NonDeskTop = function() {
-            toggleMobileGnb.on({
-                click : _onClickToggleMobileGnbHandler
-            });
+            $(this).parent().children(".navbar-depth2-wrap").stop().animate(
+              {
+                height: 0,
+              },
+              200
+            );
+          }
+        }
+      };
 
-            global_common_1Depth_mobileToggle.on({
-                click: _onClick_1DepthLinkItemHandler
-            });
+      var _onMouseOver_1DepthLinkItemHandler = function () {
+        global_common_nav.find(".depth1-link").removeClass("show");
+        $(this).addClass("show");
+      };
+
+      var _onMouseOut_2DepthHandler = function () {
+        $(this).parent().find(".depth1-link").removeClass("show");
+      };
+
+      var _onMouseOver_2DepthHandler = function () {
+        if (global_common_1DepthLinkItem.hasClass("show")) {
+          global_common_1DepthLinkItem.each(function () {
+            $(this).removeClass("show");
+          });
+        }
+      };
+
+      var _checkOpenedMobileGnb = function () {
+        if (globalNavBox.hasClass("show")) {
+          globalNavBox.removeClass("show").removeAttr("style");
+          toggleMobileGnb.removeClass("active");
+
+          SdpApp.utils.main.removeFixed();
         }
 
-        var _removeEvent_gnb_DeskTop = function() {
-            global_common_nav.off('mouseleave');
-            global_common_1DepthLinkItem.off('click');
-            global_common_1DepthLinkItem.off('mouseover');
-            global_common_1DepthLinkItem.next('.navbar-depth2-wrap').off('mouseleave');
-            commonOhtersMenu.off('mouseover');
-        };
+        _checkOpendedMobile2DepthMenu();
+      };
 
-        var _removeEvent_gnb_NonDeskTop = function() {
-            toggleMobileGnb.off('click');
-            global_common_1Depth_mobileToggle.off('click');
-
-        };
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// Event handler
-
-        //GNB
-        var _onClickToggleMobileGnbHandler = function(){
-            if(!globalNavBox.hasClass('show')){
-                if($('.btn-global-search.is-mobile').hasClass('active')){
-                    $('.btn-global-search.is-mobile').click();
-                }
-
-                $(this).attr('aria-expanded', true).addClass('active');
-
-
-                globalNavBox.on("animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd", function(){
-                    globalNavBox.css('overflow-y', 'auto').off("animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd");
-                });
-                globalNavBox.addClass('show');
-
-                SdpApp.utils.main.setFixed();
-            }else{
-                globalNavBox.on("animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd", function(){
-                    globalNavBox.off("animationend webkitAnimationEnd oAnimationEnd oAnimationEnd MSAnimationEnd");
-                    $('#global-nav-collapse').scrollTop(0);
-                    $(this).removeClass('show').removeClass('hide').removeAttr('style');
-                });
-                globalNavBox.addClass('hide');
-                $(this).attr('aria-expanded', false).removeClass('active');
-                _checkOpendedMobile2DepthMenu();
-
-                SdpApp.utils.main.removeFixed();
-            };
+      var _checkOpendedMobile2DepthMenu = function () {
+        if (global_common_1Depth_mobileToggle.hasClass("show")) {
+          global_common_1Depth_mobileToggle.removeClass("show");
+          global_common_1Depth_mobileToggle
+            .parent()
+            .find(".navbar-depth2-wrap")
+            .removeAttr("style");
         }
+      };
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// initial Style
 
-        var _onMouseOutGnbHandler = function () {
-            global_common_nav.find('.depth1-link').removeClass('show');
-        }
+      var _check1DepthSubMenu = function () {
+        global_common_1DepthLinkItem.each(function () {
+          if (!$(this).parent().find("ul").length > 0) {
+            $(this).prev().addClass("none-child");
+          }
+        });
+      };
 
-        var _onClick_1DepthLinkItemHandler = function(e){
-            if (isMobileScreen){
-                global_common_nav.find('.toggle-submenu').not($(this))
-                    .removeClass('show')
-                    .parent().children('.navbar-depth2-wrap').stop().animate({
-                        height: 0
-                    },200);
+      var _init_2depthPosition_desktop = function () {
+        global_common_2Depth.each(function () {
+          $(this).css({
+            top: -1 * ($(this).innerHeight() + 20),
+          });
+        });
+      };
 
-                if (!$(this).hasClass('show')){
-                    $(this).addClass('show');
-                    isOpened2depth = true;
+      var _init_2depthPosition_mobile = function () {
+        global_common_2Depth.each(function () {
+          $(this).removeAttr("style");
+        });
+      };
 
-                    var h = 0;
-                    $(this).parent().find('.navbar-depth2-wrap ul').each((_, x) => {
-                        h += $(x).height();
-                    });
-                    $(this).parent().children('.navbar-depth2-wrap').stop().animate({
-                        height: h
-                    },300);
-                } else {
-                    $(this).removeClass('show');
-                    isOpened2depth = false;
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// etc.
 
-                    $(this).parent().children('.navbar-depth2-wrap').stop().animate({
-                        height: 0
-                    },200);
-                }
-            }
-        };
+      // 외부에서 top-nav 함수 호출
+      var _useScrollTopNav = function () {
+        header.find("nav").removeClass("fixed-top");
+      };
 
-        var _onMouseOver_1DepthLinkItemHandler = function () {
-            global_common_nav.find('.depth1-link').removeClass('show');
-            $(this).addClass('show')
-        };
-
-
-        var _onMouseOut_2DepthHandler = function () {
-            $(this).parent().find('.depth1-link').removeClass('show');
-        };
-
-        var _onMouseOver_2DepthHandler = function () {
-            if(global_common_1DepthLinkItem.hasClass('show')){
-                global_common_1DepthLinkItem.each(function(){
-                    $(this).removeClass('show');
-                });
-            }
-        };
-
-        var _checkOpenedMobileGnb = function(){
-            if(globalNavBox.hasClass('show')){
-                globalNavBox.removeClass('show').removeAttr('style');
-                toggleMobileGnb.removeClass('active');
-
-                SdpApp.utils.main.removeFixed();
-            }
-
-            _checkOpendedMobile2DepthMenu();
-        }
-
-        var _checkOpendedMobile2DepthMenu = function(){
-            if(global_common_1Depth_mobileToggle.hasClass('show')){
-                global_common_1Depth_mobileToggle.removeClass('show');
-                global_common_1Depth_mobileToggle.parent().find('.navbar-depth2-wrap').removeAttr('style');
-            }
-        };
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// initial Style
-
-        var _check1DepthSubMenu = function(){
-            global_common_1DepthLinkItem.each(function(){
-                if(!$(this).parent().find('ul').length  > 0){
-                    $(this).prev().addClass('none-child');
-                }
-            });
-        };
-
-        var _init_2depthPosition_desktop = function(){
-            global_common_2Depth.each(function(){
-                $(this).css({
-                    top: -1 * ($(this).innerHeight() + 20),
-                })
-            });
-        };
-
-        var _init_2depthPosition_mobile = function(){
-            global_common_2Depth.each(function(){
-                $(this).removeAttr('style');
-            });
-        };
-
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// etc.
-
-        // 외부에서 top-nav 함수 호출
-        var _useScrollTopNav = function(){
-            header.find('nav').removeClass('fixed-top');
-        };
-
-
-
-
-        return {
-            init: _init,
-            use_scroll_top_nav : _useScrollTopNav
-        }
-
+      return {
+        init: _init,
+        use_scroll_top_nav: _useScrollTopNav,
+      };
     })();
 
     ns.top_nav = TopNav;
+  })(SdpApp || {}, jQuery);
 
-}(SdpApp || {}, jQuery));
-
-/*=========================================================== [ Footer ] =======================================================================*/
-(function (ns, $, undefined) {
+  /*=========================================================== [ Footer ] =======================================================================*/
+  (function (ns, $, undefined) {
     var Footer = (function () {
-        var _init = function(){
-
-            $(window.GlobalEvent).on(window.GlobalEvent.CHANGE_DEVICE_SIZE, function () {
-
-                if(window.GlobalVars.CurrentScreenType === window.GlobalVars.DeviceType.DESKTOP) {
-                    // var coll = $('.sdp-footer .ft-header button');
-                    // var i;
-                    // for (i = 0; i < coll.length; i++) {
-                    //     var h = 0;
-
-                    //     var inners = $(coll[i]).parent().next().find('.ft-depth2-inner');
-                    //     inners.each((_, x) => {
-                    //         h += $(x).height();
-                    //     });
-
-                    //     $(coll[i]).parent().next().css({height: h});
-                    // }
-                }else {
-                    // var coll = $('.sdp-footer .ft-header button');
-                    // var i;
-                    // for (i = 0; i < coll.length; i++) {
-                    //     $(coll[i]).removeClass('show');
-                    //     $(coll[i]).parent().next().css({height: 0})
-                    // }
-                }
-            });
-            var coll = $('.sdp-footer .ft-header button');
-            var i;
-
-            for (i = 0; i < coll.length; i++) {
-                // $(coll[i]).parent().next().css({height: 0})
-                $(coll[i]).removeClass('show');
-                $(coll[i]).click(function () {
-                    if(!$(this).hasClass('show')){
-                        $(this).addClass('show');
-                        var h = $(this).parent().next().find('.ft-depth2-inner').height();
-                        $(this).parent().next().stop().animate({height: h}, 200);
-
-                    } else {
-                        $(this).removeClass('show');
-                        $(this).parent().next().stop().animate({height: 0}, 200);
-                    }
-                });
+      var _init = function () {
+        $(window.GlobalEvent).on(
+          window.GlobalEvent.CHANGE_DEVICE_SIZE,
+          function () {
+            if (
+              window.GlobalVars.CurrentScreenType ===
+              window.GlobalVars.DeviceType.DESKTOP
+            ) {
+              // var coll = $('.sdp-footer .ft-header button');
+              // var i;
+              // for (i = 0; i < coll.length; i++) {
+              //     var h = 0;
+              //     var inners = $(coll[i]).parent().next().find('.ft-depth2-inner');
+              //     inners.each((_, x) => {
+              //         h += $(x).height();
+              //     });
+              //     $(coll[i]).parent().next().css({height: h});
+              // }
+            } else {
+              // var coll = $('.sdp-footer .ft-header button');
+              // var i;
+              // for (i = 0; i < coll.length; i++) {
+              //     $(coll[i]).removeClass('show');
+              //     $(coll[i]).parent().next().css({height: 0})
+              // }
             }
-        };
-        return {
-            init: _init,
-        }
+          }
+        );
+        var coll = $(".sdp-footer .ft-header button");
+        var i;
 
+        for (i = 0; i < coll.length; i++) {
+          // $(coll[i]).parent().next().css({height: 0})
+          $(coll[i]).removeClass("show");
+          $(coll[i]).click(function () {
+            if (!$(this).hasClass("show")) {
+              $(this).addClass("show");
+              var h = $(this).parent().next().find(".ft-depth2-inner").height();
+              $(this).parent().next().stop().animate({ height: h }, 200);
+            } else {
+              $(this).removeClass("show");
+              $(this).parent().next().stop().animate({ height: 0 }, 200);
+            }
+          });
+        }
+      };
+      return {
+        init: _init,
+      };
     })();
 
     ns.footer = Footer;
+  })(SdpApp || {}, jQuery);
 
-}(SdpApp || {}, jQuery));
-
-
-
-/*=========================================================== [ Component UI Main ] =======================================================================*/
-/*(function (ns, $, undefined) {
+  /*=========================================================== [ Component UI Main ] =======================================================================*/
+  /*(function (ns, $, undefined) {
     var UiComponentMain = (function () {
         var motionElList, commonBackdrop;
         var modalTriggerEl, targetModalEl;
@@ -696,36 +744,35 @@ $(document).ready(function(){
     ns.ui.main = UiComponentMain;
 
 }(window.SdpApp || {}, jQuery));*/
-
 </script>
 
 <script type="text/x-handlebars" data-template-name="navigation/category">
-{{#d-section class="navigation-container"}}
-  {{add-category-tag-classes category=category}}
-  <section class="category-heading">
-    {{#if category.uploaded_logo.url}}
-      {{cdn-img
-        src=category.uploaded_logo.url
-        class="category-logo"
-        width=category.uploaded_logo.width
-        height=category.uploaded_logo.height}}
-      {{#if category.description}}
-        <h1 class="vertical-center">{{dir-span category.name}}</h1>
+  {{#d-section class="navigation-container"}}
+    {{add-category-tag-classes category=category}}
+    <section class="category-heading">
+      {{#if category.uploaded_logo.url}}
+        {{cdn-img
+          src=category.uploaded_logo.url
+          class="category-logo"
+          width=category.uploaded_logo.width
+          height=category.uploaded_logo.height}}
+        {{#if category.description}}
+          <h1 class="vertical-center">{{dir-span category.name}}</h1>
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </section>
+    </section>
 
-  <div class="category-navigation">
-    {{d-navigation
-      category=category
-      filterMode=filterMode
-      noSubcategories=noSubcategories
-      canCreateTopic=canCreateTopic
-      createTopic=(route-action "createTopic")
-      createTopicDisabled=cannotCreateTopicOnCategory
-      hasDraft=draft
-      editCategory=(route-action "editCategory" category)}}
-    {{plugin-outlet name="category-navigation" args=(hash category=category)}}
-  </div>
-{{/d-section}}
+    <div class="category-navigation">
+      {{d-navigation
+        category=category
+        filterMode=filterMode
+        noSubcategories=noSubcategories
+        canCreateTopic=canCreateTopic
+        createTopic=(route-action "createTopic")
+        createTopicDisabled=cannotCreateTopicOnCategory
+        hasDraft=draft
+        editCategory=(route-action "editCategory" category)}}
+      {{plugin-outlet name="category-navigation" args=(hash category=category)}}
+    </div>
+  {{/d-section}}
 </script>
